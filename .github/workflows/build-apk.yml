@@ -2,35 +2,23 @@ name: Build ARSAM APK
 
 on:
   workflow_dispatch:
-    inputs:
-      build_type:
-        description: "debug or release"
-        required: true
-        default: "debug"
-        type: choice
-        options:
-          - debug
-          - release
   push:
     branches: [ main, master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v3
 
       - name: Accept licenses
         run: yes | sdkmanager --licenses || true
@@ -39,22 +27,26 @@ jobs:
         run: |
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;34.0.0"
 
-      - name: Gradle wrapper
+      - name: Show repo layout
         run: |
-          if [ ! -f gradlew ]; then
-            gradle wrapper --gradle-version 8.5 || true
-          fi
-          chmod +x gradlew || true
+          ls -la
+          ls -la app || echo "MISSING app/"
+          ls -la app/src/main/python || echo "MISSING python/"
+          test -f settings.gradle && echo OK settings || echo MISSING settings.gradle
+          test -f app/build.gradle && echo OK app/build.gradle || echo MISSING app/build.gradle
+          test -f app/src/main/python/arsam_engine.py && echo OK engine || echo MISSING engine
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.5"
+
+      - name: local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
       - name: Build debug APK
-        if: ${{ github.event.inputs.build_type != 'release' }}
-        run: |
-          if [ -x ./gradlew ]; then ./gradlew assembleDebug --no-daemon --stacktrace
-          else gradle assembleDebug --no-daemon --stacktrace; fi
+        run: gradle assembleDebug --no-daemon --stacktrace
 
-      - name: Upload debug APK
-        if: ${{ github.event.inputs.build_type != 'release' }}
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: ARSAM-debug-apk
           path: app/build/outputs/apk/debug/*.apk
