@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ARSAM</string>
+    <string name="loading">در حال راه‌اندازی ARSAM…</string>
+    <string name="storage_hint">داده فقط در Internal Storage/AAA ذخیره می‌شود</string>
+    <string name="need_storage">برای کار پایدار، دسترسی «مدیریت همه فایل‌ها» را به ARSAM بدهید تا پوشه AAA ساخته شود.</string>
+    <string name="open_settings">باز کردن تنظیمات</string>
+    <string name="retry">تلاش دوباره</string>
+    <string name="analysis_only">فقط تحلیل — بدون اجرای سفارش</string>
+</resources>

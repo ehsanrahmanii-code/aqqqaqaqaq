@@ -1,0 +1,100 @@
+plugins {
+    id 'com.android.application'
+    id 'com.chaquo.python'
+}
+
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+def envStoreFile = System.getenv("ARSAM_KEYSTORE_PATH")
+def envStorePassword = System.getenv("ARSAM_KEYSTORE_PASSWORD")
+def envKeyAlias = System.getenv("ARSAM_KEY_ALIAS")
+def envKeyPassword = System.getenv("ARSAM_KEY_PASSWORD")
+
+android {
+    namespace 'com.arsam.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.arsam.app"
+        minSdk 26
+        targetSdk 35
+        versionCode 52
+        versionName "5.2.0"
+
+        ndk {
+            abiFilters "arm64-v8a", "armeabi-v7a"
+        }
+
+        python {
+            version "3.11"
+            pip {
+                install "flask"
+                install "requests"
+                install "urllib3"
+                install "numpy"
+                install "pandas"
+                install "websocket-client"
+            }
+        }
+    }
+
+    signingConfigs {
+        release {
+            if (envStoreFile && envStorePassword && envKeyAlias && envKeyPassword) {
+                storeFile file(envStoreFile)
+                storePassword envStorePassword
+                keyAlias envKeyAlias
+                keyPassword envKeyPassword
+            } else if (keystorePropertiesFile.exists()) {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if ((envStoreFile && envStorePassword && envKeyAlias && envKeyPassword) || keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
+        }
+        debug {
+            applicationIdSuffix ""
+            versionNameSuffix "-debug"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt']
+        }
+    }
+}
+
+chaquopy {
+    defaultConfig {
+        pyc {
+            src false
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.webkit:webkit:1.10.0'
+}

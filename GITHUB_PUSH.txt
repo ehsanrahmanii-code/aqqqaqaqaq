@@ -1,0 +1,17 @@
+# آپلود روی GitHub + بیلد APK
+
+cd ARSAM-Android
+git init
+git add .
+git commit -m "ARSAM V5.2 — AAA storage, signed release workflow, custom icon"
+git branch -M main
+git remote add origin https://github.com/YOUR_USER/ARSAM-Android.git
+git push -u origin main
+
+# Debug APK:
+#   Actions → Build ARSAM APK → Run (build_type=debug)
+
+# Signed release:
+#   1) bash scripts/create-keystore.sh
+#  2) Add GitHub Secrets (see SIGNING.md)
+#  3) Actions → Build ARSAM Release (Signed) → Run workflow
