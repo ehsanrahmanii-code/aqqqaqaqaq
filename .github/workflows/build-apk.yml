@@ -18,21 +18,20 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: android-actions/setup-android@v3
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-35 build-tools;34.0.0
 
       - name: Accept licenses
         run: yes | sdkmanager --licenses || true
 
-      - name: Install SDK packages
-        run: |
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;34.0.0"
-
       - name: Show repo layout
         run: |
           ls -la
-          ls -la app || echo "MISSING app/"
-          ls -la app/src/main/python || echo "MISSING python/"
-          test -f settings.gradle && echo OK settings || echo MISSING settings.gradle
+          ls -la app 2>/dev/null || echo "MISSING app/"
+          ls -la app/src/main/python 2>/dev/null || echo "MISSING python/"
+          test -f settings.gradle && echo OK settings.gradle || echo MISSING settings.gradle
           test -f app/build.gradle && echo OK app/build.gradle || echo MISSING app/build.gradle
           test -f app/src/main/python/arsam_engine.py && echo OK engine || echo MISSING engine
 
@@ -41,7 +40,7 @@ jobs:
           gradle-version: "8.5"
 
       - name: local.properties
-        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+        run: echo "sdk.dir=${ANDROID_HOME}" > local.properties
 
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon --stacktrace
